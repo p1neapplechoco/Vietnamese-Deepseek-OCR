@@ -1,0 +1,48 @@
+\section{Phương pháp nghiên cứu}
+
+Phần này trình bày chi tiết về dữ liệu và phương pháp tiếp cận được sử dụng trong nghiên cứu. Chúng tôi tập trung phân tích đặc điểm của bộ dữ liệu chữ viết tay tiếng Việt và mô tả kiến trúc mô hình cũng như kỹ thuật tinh chỉnh được áp dụng.
+
+\subsection{Dữ liệu nghiên cứu}
+
+\subsubsection{Bộ dữ liệu UIT-HWDB}
+Nghiên cứu sử dụng bộ dữ liệu UIT-HWDB \cite{DBLP:conf/rivf/NguyenVN22} (University of Information Technology - Handwritten Database), một nguồn tài nguyên quan trọng cho cộng đồng nghiên cứu nhận dạng chữ viết tay tiếng Việt. Đây là bộ dữ liệu được thu thập từ chữ viết tay của nhiều người viết khác nhau, đảm bảo tính đa dạng về phong cách viết, nét bút và công cụ viết.
+
+Đặc điểm nổi bật của dữ liệu này là sự hiện diện dày đặc của các ký tự có dấu trong tiếng Việt. Khác với tiếng Anh, tiếng Việt có hệ thống dấu thanh (sắc, huyền, hỏi, ngã, nặng) và dấu mũ (â, ê, ô, ă, ư, ơ) phức tạp. Việc nhận dạng chính xác các dấu này là thách thức lớn nhất, vì chúng thường nhỏ và dễ bị nhầm lẫn hoặc mất mát trong quá trình xử lý ảnh.
+
+Trong phạm vi nghiên cứu này, chúng tôi tập trung vào bài toán nhận dạng ở cấp độ từ (word-level), sử dụng tập dữ liệu con chứa các ảnh từ đơn lẻ được cắt ra từ các dòng văn bản viết tay.
+
+\subsubsection{Tiền xử lý dữ liệu}
+Để đảm bảo chất lượng đầu vào cho mô hình, quy trình tiền xử lý được thực hiện qua các bước sau:
+
+\begin{itemize}
+    \item \textbf{Chuyển đổi không gian màu:} Ảnh gốc được chuyển đổi sang ảnh xám (grayscale). Bước này giúp loại bỏ nhiễu màu sắc không cần thiết, giảm chiều dữ liệu và tập trung vào thông tin cường độ sáng (intensity) thể hiện nét chữ.
+    \item \textbf{Chuẩn hóa (Normalization):} Giá trị pixel của ảnh được chuẩn hóa về khoảng [0, 1] thông qua phương pháp Min-Max. Việc này giúp đồng bộ hóa phân phối dữ liệu, hỗ trợ quá trình hội tụ của mô hình diễn ra nhanh và ổn định hơn.
+    \item \textbf{Đồng bộ kích thước:} Các ảnh đầu vào có kích thước không đồng nhất được thay đổi (resize) về một kích thước chuẩn (128x128 pixel). Việc này là cần thiết để đóng gói dữ liệu thành các batch trong quá trình huấn luyện.
+\end{itemize}
+
+\subsubsection{Phương pháp lấy mẫu dữ liệu (Data Sampling)}
+
+Để đảm bảo tính khách quan và độ tin cậy của kết quả đánh giá, ta sử dụng phương pháp \textbf{Lấy mẫu ngẫu nhiên đơn giản (Simple Random Sampling)} để phân chia dữ liệu. Toàn bộ tập dữ liệu sau khi tiền xử lý được xáo trộn ngẫu nhiên và chia thành ba tập con độc lập theo tỷ lệ:
+\begin{itemize}
+    \item \textbf{Tập huấn luyện (Training set - 80\%):} Dùng để cập nhật trọng số mô hình.
+    \item \textbf{Tập thẩm định (Validation set - 10\%):} Dùng để tinh chỉnh siêu tham số và đánh giá sớm (early stopping).
+    \item \textbf{Tập kiểm tra (Test set - 10\%):} Dùng để đánh giá hiệu năng cuối cùng của mô hình.
+\end{itemize}
+Việc phân chia ngẫu nhiên giúp đảm bảo phân phối của các ký tự và kiểu chữ trong ba tập là tương đồng nhau, tránh hiện tượng thiên lệch (bias).
+
+\subsection{Mô hình và Kỹ thuật huấn luyện}
+
+\subsubsection{Kiến trúc Vision-Language}
+Chúng tôi tiếp cận bài toán OCR dưới góc độ của một bài toán đa phương thức (Multimodal), sử dụng mô hình nền tảng là DeepSeek-OCR (dựa trên kiến trúc Qwen-VL) \cite{unsloth2025deepseek}. Thay vì sử dụng các kiến trúc CNN-RNN truyền thống, mô hình này kết hợp một bộ mã hóa hình ảnh (Vision Encoder) mạnh mẽ với một mô hình ngôn ngữ lớn (Large Language Model - LLM).
+
+Ưu điểm của phương pháp này là khả năng tận dụng tri thức ngôn ngữ phong phú của LLM để giải quyết các trường hợp chữ viết mờ, khó đọc hoặc bị che khuất, dựa trên ngữ cảnh của các ký tự xung quanh.
+
+\subsubsection{Kỹ thuật Fine-tuning}
+Để thích nghi mô hình với miền dữ liệu chữ viết tay tiếng Việt mà không tốn kém quá nhiều tài nguyên tính toán, chúng tôi sử dụng kỹ thuật \textbf{LoRA (Low-Rank Adaptation)} và thư viện Unsloth \cite{unsloth_library} để tối ưu hóa quá trình huấn luyện.
+
+LoRA cho phép đóng băng các trọng số của mô hình tiền huấn luyện khổng lồ và chỉ cập nhật các ma trận phân rã hạng thấp (low-rank decomposition matrices) được thêm vào các lớp Attention. Phương pháp này giúp giảm đáng kể số lượng tham số cần huấn luyện trong khi vẫn duy trì được hiệu năng của mô hình gốc.
+
+\subsubsection{Cơ chế xử lý ảnh động}
+Một thành phần quan trọng trong phương pháp của chúng tôi là việc sử dụng cơ chế xử lý ảnh động (Dynamic Resolution). Thay vì nén ảnh về một kích thước cố định làm mất chi tiết, mô hình sử dụng cơ chế cắt ảnh thông minh. Ảnh đầu vào được chia thành các mảnh dựa trên tỷ lệ khung hình thực tế, cho phép mô hình nhìn rõ các chi tiết nhỏ như dấu câu tiếng Việt ở độ phân giải cao hơn.
+
+Mô hình được huấn luyện theo cơ chế \textit{Next Token Prediction} với hàm loss Cross-Entropy, sử dụng prompt hướng dẫn cụ thể (ví dụ: \texttt{"<image>\textbackslash nFree OCR."}) để định hướng mô hình tập trung vào tác vụ trích xuất văn bản.

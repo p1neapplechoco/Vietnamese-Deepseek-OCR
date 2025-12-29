@@ -1,0 +1,13 @@
+\section{Kết luận}
+
+Nghiên cứu này đã trình bày một phương pháp tiếp cận hiện đại cho bài toán nhận dạng chữ viết tay tiếng Việt bằng cách tinh chỉnh mô hình Vision-Language DeepSeek-OCR. Thông qua các thực nghiệm và đánh giá chi tiết, chúng tôi rút ra những kết luận chính sau:
+
+\begin{itemize}
+    \item \textbf{Hiệu quả của mô hình Vision-Language:} Việc kết hợp khả năng trích xuất đặc trưng hình ảnh với tri thức ngôn ngữ của LLM đã mang lại hiệu quả vượt trội. Mô hình không chỉ nhận dạng ký tự mà còn hiểu được ngữ cảnh, giúp giải quyết triệt để các thách thức đặc thù của tiếng Việt như hệ thống dấu thanh phức tạp và các nét viết tay biến dạng.
+    
+    \item \textbf{Tính khả thi của kỹ thuật LoRA:} Kỹ thuật tinh chỉnh thích nghi hạng thấp (LoRA) đã chứng minh được tính hiệu quả cao, cho phép huấn luyện một mô hình lớn trên tài nguyên phần cứng hạn chế mà vẫn đạt được độ chính xác ấn tượng. Đây là một hướng đi hứa hẹn cho việc phát triển các ứng dụng AI chuyên biệt với chi phí thấp.
+    
+    \item \textbf{Cải thiện so với Baseline:} Kết quả thực nghiệm trên bộ dữ liệu UIT-HWDB cho thấy mô hình sau khi tinh chỉnh đã giảm đáng kể tỷ lệ lỗi ký tự (CER) và tỷ lệ lỗi từ (WER) so với mô hình gốc, đặc biệt là trong các trường hợp chữ viết tháu và ảnh có chất lượng không đồng đều.
+\end{itemize}
+
+Tuy nhiên, nghiên cứu cũng nhận diện được những rào cản về tốc độ suy luận và sự phụ thuộc vào dữ liệu huấn luyện. Trong tương lai, chúng tôi sẽ tập trung vào việc tối ưu hóa kiến trúc để giảm độ trễ, đồng thời mở rộng bộ dữ liệu để bao phủ nhiều loại hình văn bản thực tế hơn, hướng tới việc xây dựng một hệ thống OCR tiếng Việt toàn diện và mạnh mẽ.

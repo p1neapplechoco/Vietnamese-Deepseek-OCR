@@ -1,0 +1,28 @@
+\section{Bối cảnh}
+
+Nhận dạng ký tự quang học (Optical Character Recognition - OCR) là công nghệ cho phép chuyển đổi văn bản dưới dạng hình ảnh thành dữ liệu số có thể chỉnh sửa và tìm kiếm. Đây là thành phần quan trọng trong quá trình số hóa tài liệu và tự động hóa quy trình xử lý thông tin.
+
+\subsection{Thực trạng hiện tại}
+
+Lĩnh vực OCR đã trải qua sự chuyển dịch mạnh mẽ từ các phương pháp so khớp mẫu truyền thống sang các kiến trúc học sâu (Deep Learning) hiện đại. Các hệ thống truyền thống dựa trên trích xuất đặc trưng thủ công thường gặp khó khăn với nhiễu và biến dạng. Sự ra đời của Mạng nơ-ron Tích chập (CNN) và Mạng nơ-ron Hồi quy (RNN/LSTM) đã giải quyết tốt vấn đề này, cải thiện đáng kể khả năng nhận dạng chuỗi ký tự.
+
+Gần đây, kiến trúc Transformer với cơ chế Self-Attention đang dần thay thế RNN, cho phép nắm bắt ngữ cảnh toàn cục tốt hơn và xử lý hiệu quả các cấu trúc văn bản phức tạp thông qua các mô hình Vision-Language như Donut hay TrOCR.
+
+\subsection{OCR cho tiếng Việt}
+
+Mặc dù đạt độ chính xác cao trên các ngôn ngữ Latinh cơ bản, việc áp dụng OCR cho tiếng Việt vẫn gặp nhiều thách thức do đặc điểm ngôn ngữ \cite{le2025surveyvietnamesedocumentanalysis}:
+
+\begin{itemize}
+    \item \textbf{Vấn đề mất dấu:} Tiếng Việt có hệ thống dấu thanh và dấu phụ dày đặc, nhiều dấu chiếm diện tích rất nhỏ. Các kiến trúc CNN tiêu chuẩn sử dụng lớp Pooling để giảm chiều dữ liệu thường làm mất các đặc trưng chi tiết này, dẫn đến các lỗi nhầm lẫn phổ biến (ví dụ: "a", "á", "à", "ạ").
+    \item \textbf{Sự khan hiếm dữ liệu:} Tài nguyên dữ liệu huấn luyện chất lượng cao cho tiếng Việt, đặc biệt là chữ viết tay tự do và tài liệu lịch sử, còn hạn chế so với tiếng Anh hay tiếng Trung. Các bộ dữ liệu hiện có như VNOnDB hay UIT-HWDB thường có quy mô nhỏ hoặc là dữ liệu tổng hợp, gây khó khăn cho việc huấn luyện các mô hình Deep Learning lớn.
+\end{itemize}
+
+Hiện nay, các giải pháp OCR cho tiếng Việt chủ yếu bao gồm:
+
+\begin{itemize}
+    \item \textbf{Tesseract OCR:} Hỗ trợ tiếng Việt qua mô hình LSTM nhưng thường có tỷ lệ lỗi ký tự (CER) cao với ảnh nhiễu hoặc bố cục phức tạp.
+    \item \textbf{PaddleOCR và VietOCR:} Các phương pháp tiên tiến (SOTA) hiện nay. PaddleOCR (kiến trúc PP-OCR) và VietOCR (dựa trên Transformer) xử lý tốt văn bản nghiêng, cong và giảm thiểu lỗi dấu nhờ cơ chế Attention.
+    \item \textbf{Hậu xử lý bằng LLM:} Xu hướng tích hợp Mô hình Ngôn ngữ Lớn (LLM) để hậu xử lý kết quả OCR. LLM tận dụng ngữ cảnh để sửa lỗi chính tả và dấu thanh, đặc biệt hiệu quả với tài liệu cũ hoặc mờ.
+\end{itemize}
+
+Tóm lại, bài toán OCR tiếng Việt đang chuyển dịch từ nhận dạng ký tự đơn lẻ sang hiểu tài liệu toàn diện (Document Understanding) và kết hợp đa mô hình để giải quyết vấn đề dấu thanh và cấu trúc phức tạp.

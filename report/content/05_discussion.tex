@@ -1,0 +1,46 @@
+\section{Thảo luận}
+
+Trong phần này, chúng tôi sẽ đánh giá mức độ cải thiện của mô hình, phân tích nguyên nhân dẫn đến kết quả đó, đồng thời thảo luận về các hạn chế còn tồn tại của dữ liệu, mô hình và quy trình huấn luyện.
+
+\subsection{Đánh giá mức độ cải thiện}
+
+Kết quả thực nghiệm cho thấy mô hình sau khi tinh chỉnh (Fine-tuned) đã đạt được sự cải thiện đáng kể so với mô hình cơ sở (Baseline) trên cả hai chỉ số CER và WER. Mức độ cải thiện này đặc biệt rõ rệt đối với các trường hợp chữ viết tay có nhiều dấu thanh phức tạp và nét viết tháu, nơi mà mô hình Baseline thường xuyên gặp lỗi. Sự giảm thiểu tỷ lệ lỗi không chỉ dừng lại ở mức độ nhận dạng ký tự đơn lẻ mà còn thể hiện ở khả năng khôi phục đúng các từ vựng tiếng Việt hoàn chỉnh.
+
+\subsection{Phân tích nguyên nhân}
+
+Sự cải thiện hiệu năng có thể được lý giải bởi các yếu tố chính sau:
+
+\begin{itemize}
+    \item \textbf{Kiến trúc Vision-Language ưu việt:} Khác với các hệ thống OCR truyền thống (CNN-RNN), DeepSeek-OCR kết hợp khả năng trích xuất đặc trưng hình ảnh mạnh mẽ với tri thức ngôn ngữ phong phú của LLM. Điều này cho phép mô hình không chỉ "nhìn" thấy nét chữ mà còn "hiểu" được ngữ cảnh, từ đó tự động sửa lỗi và điền khuyết các nét mờ dựa trên xác suất ngôn ngữ.
+    \item \textbf{Hiệu quả của LoRA:} Kỹ thuật LoRA cho phép mô hình thích nghi nhanh chóng với miền dữ liệu chữ viết tay tiếng Việt mà không làm mất đi khả năng tổng quát hóa. Việc cập nhật trọng số có chọn lọc giúp mô hình tập trung học các đặc trưng cụ thể của bộ dữ liệu UIT-HWDB (như cách viết dấu, độ nghiêng) một cách hiệu quả.
+    \item \textbf{Cơ chế xử lý ảnh động:} Việc sử dụng crop\_mode giúp mô hình bảo toàn độ phân giải cao của ảnh đầu vào, cho phép nhận diện rõ ràng các chi tiết nhỏ như dấu nặng, dấu hỏi - vốn là điểm yếu của các phương pháp nén ảnh về kích thước cố định.
+\end{itemize}
+
+Tuy nhiên, trong một số trường hợp hãn hữu, mô hình vẫn chưa đạt được độ chính xác tuyệt đối. Nguyên nhân chủ yếu đến từ sự nhập nhằng quá lớn trong nét viết tay của một số mẫu dữ liệu, khiến ngay cả con người cũng khó phân biệt nếu không có ngữ cảnh rộng hơn.
+
+\subsection{Hạn chế của nghiên cứu}
+
+Mặc dù đạt kết quả khả quan, nghiên cứu vẫn còn tồn tại một số hạn chế:
+
+\subsubsection{Hạn chế về dữ liệu}
+\begin{itemize}
+    \item \textbf{Quy mô và độ đa dạng:} Bộ dữ liệu UIT-HWDB, mặc dù chất lượng, nhưng vẫn còn hạn chế về quy mô so với các bộ dữ liệu tiếng Anh hay tiếng Trung \cite{le2025surveyvietnamesedocumentanalysis}. Sự thiếu hụt các mẫu chữ viết tay từ các vùng miền khác nhau hoặc các phong cách viết "lạ" có thể làm giảm khả năng tổng quát hóa của mô hình trong thực tế.
+    \item \textbf{Phạm vi văn bản:} Dữ liệu hiện tại chủ yếu tập trung ở cấp độ từ (word-level) và dòng ngắn. Mô hình chưa được kiểm chứng kỹ lưỡng trên các tài liệu nguyên trang (full-page) với bố cục phức tạp.
+\end{itemize}
+
+\subsubsection{Hạn chế về mô hình và huấn luyện}
+\begin{itemize}
+    \item \textbf{Tốc độ suy luận:} Do sử dụng kiến trúc Transformer lớn, tốc độ suy luận của DeepSeek-OCR chậm hơn đáng kể so với các mô hình chuyên biệt nhẹ (như PaddleOCR). Điều này là rào cản lớn cho các ứng dụng yêu cầu phản hồi thời gian thực.
+    \item \textbf{Vấn đề ảo giác (Hallucination):} Là đặc tính cố hữu của các mô hình sinh (Generative Models), đôi khi mô hình có thể tự sinh ra các từ ngữ không có trong ảnh, đặc biệt khi ảnh đầu vào quá nhiễu.
+    \item \textbf{Tài nguyên tính toán:} Quá trình huấn luyện, dù đã dùng LoRA, vẫn yêu cầu tài nguyên GPU đáng kể, gây khó khăn cho việc triển khai và tinh chỉnh liên tục trên các thiết bị hạn chế tài nguyên.
+\end{itemize}
+
+\subsection{Hướng phát triển}
+
+Dựa trên các phân tích trên, chúng tôi đề xuất một số hướng nghiên cứu tiếp theo:
+
+\begin{itemize}
+    \item \textbf{Mở rộng dữ liệu:} Thu thập và tổng hợp thêm dữ liệu chữ viết tay đa dạng hơn, bao gồm cả các mẫu văn bản hành chính, đơn từ để tăng tính thực tế.
+    \item \textbf{Tối ưu hóa mô hình:} Nghiên cứu các kỹ thuật lượng tử hóa (Quantization) và chưng cất tri thức (Knowledge Distillation) để giảm kích thước mô hình và tăng tốc độ suy luận mà không làm giảm quá nhiều độ chính xác.
+    \item \textbf{Hậu xử lý chuyên sâu:} Kết hợp thêm các module kiểm tra chính tả hoặc ràng buộc ngữ pháp tiếng Việt chặt chẽ hơn ở đầu ra để hạn chế lỗi ảo giác.
+\end{itemize}

@@ -1,0 +1,60 @@
+\documentclass[12pt]{article}
+
+\usepackage{hcmus-report-template}
+
+% Disable indentation on new paragraphs
+\setlength{\parindent}{0pt}
+
+% Line spacing 1.5
+\renewcommand{\baselinestretch}{1.5}
+
+% Optional: graphic path
+% \graphicspath{PATH_TO_GRAPHIC_FOLDER}
+
+% To use Times font family, uncomment this row
+% \usepackage{mathptmx}
+
+% To use roman section / subsection, uncomment these rows
+% \renewcommand{\thesection}{\Roman{section}}
+% \renewcommand{\thesubsection}{\thesection.\Roman{subsection}}
+
+% Define course name, report name and report title.
+\newcommand{\coursename}{Nhập môn Xử lí Ngôn ngữ Tự nhiên}
+\newcommand{\reportname}{Fine-tuning mô hình DeepSeek-OCR cho bài toán nhận diện chữ viết tay tiếng Việt}
+\newcommand{\reporttitle}{Project \#2   }
+
+\newcommand{\studentname}{Nguyễn Thiên Ấn - 23122020}
+\newcommand{\teachername}{PGS.TS. Đinh Điền \\ TS. Nguyễn Hồng Bửu Long}
+
+% Header
+\lhead{\reporttitle}
+\rhead{
+Trường Đại học Khoa học Tự nhiên - ĐHQG HCM\\
+\coursename
+}
+
+
+% ============ DOCUMENT ============
+\begin{document}
+
+\pagenumbering{roman}
+\input{content/title.tex}
+
+\tableofcontents
+\pagebreak
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{content/01_background.tex}
+\input{content/02_methodology.tex}
+\input{content/03_experiments.tex}
+\input{content/04_results.tex}
+\input{content/05_discussion.tex}
+\input{content/06_conclusion.tex}
+\input{content/07_resources.tex}
+
+% References
+\input{ref/ref.tex}
+
+\end{document}

@@ -1,0 +1,46 @@
+\section{Thực nghiệm}
+
+Phần này trình bày chi tiết về thiết lập thực nghiệm và các tham số huấn luyện được sử dụng trong nghiên cứu.
+
+\subsection{Thiết lập thực nghiệm}
+
+\subsubsection{Môi trường phần cứng và phần mềm}
+Quá trình huấn luyện và đánh giá được thực hiện trên môi trường có hỗ trợ GPU để đảm bảo hiệu năng tính toán.
+\begin{itemize}
+    \item \textbf{Thư viện chính:} \texttt{unsloth} \cite{unsloth_library}, \texttt{transformers}, \texttt{peft}, \texttt{trl}.
+    \item \textbf{Mô hình nền tảng:} \texttt{unsloth/DeepSeek-OCR} (dựa trên kiến trúc Qwen-VL) \cite{unsloth2025deepseek}.
+    \item \textbf{Độ chính xác:} Sử dụng chế độ huấn luyện hỗn hợp (Mixed Precision) với BF16 (nếu phần cứng hỗ trợ) hoặc FP16 để tối ưu hóa bộ nhớ và tốc độ.
+\end{itemize}
+
+\subsubsection{Cấu hình tham số (Hyperparameters)}
+
+Để đạt được hiệu quả tốt nhất trên tập dữ liệu chữ viết tay tiếng Việt, chúng tôi đã thiết lập các tham số huấn luyện chi tiết như sau:
+
+\textbf{1. Cấu hình LoRA (Low-Rank Adaptation):}
+Kỹ thuật LoRA được sử dụng để tinh chỉnh mô hình một cách hiệu quả.
+\begin{itemize}
+    \item \texttt{r} (Rank) = 16: Kích thước hạng của các ma trận cập nhật trọng số. Giá trị 16 là sự cân bằng giữa khả năng học các đặc trưng mới và số lượng tham số cần lưu trữ.
+    \item \texttt{lora\_alpha} = 16: Hệ số scaling cho các trọng số LoRA. Việc đặt $\alpha = r$ giúp ổn định quá trình huấn luyện.
+    \item \texttt{target\_modules}: Áp dụng trên tất cả các module chiếu (projection) trong các lớp Attention và Feed-Forward của mô hình, bao gồm: \texttt{["q\_proj", "k\_proj", "v\_proj", "o\_proj", \\ "gate\_proj", "up\_proj", "down\_proj"]}. Việc áp dụng toàn diện này giúp mô hình thích nghi tốt hơn với miền dữ liệu mới.
+    \item \texttt{lora\_dropout} = 0: Không sử dụng dropout trong các lớp LoRA để giữ nguyên tín hiệu học.
+    \item \texttt{bias} = "none": Không cập nhật các tham số bias, chỉ tập trung vào trọng số LoRA.
+\end{itemize}
+
+\textbf{2. Tham số huấn luyện (Training Arguments):}
+\begin{itemize}
+    \item \texttt{per\_device\_train\_batch\_size} = 2: Số lượng mẫu dữ liệu trên mỗi GPU trong một bước huấn luyện. Do giới hạn bộ nhớ VRAM khi xử lý ảnh độ phân giải cao, batch size nhỏ được ưu tiên.
+    \item \texttt{gradient\_accumulation\_steps} = 4: Tích lũy gradient qua 4 bước trước khi cập nhật trọng số. Điều này tạo ra một batch size hiệu dụng là $2 \times 4 = 8$, giúp gradient ổn định hơn mà không tốn thêm bộ nhớ tức thời.
+    \item \texttt{learning\_rate} = $2 \times 10^{-4}$: Tốc độ học khởi điểm. Đây là mức khá cao so với fine-tuning full-parameter, nhưng phù hợp với LoRA.
+    \item \texttt{max\_steps} = 60: Tổng số bước cập nhật trọng số. Do sử dụng pre-trained model mạnh, mô hình hội tụ khá nhanh trên tập dữ liệu nhỏ.
+    \item \texttt{warmup\_steps} = 5: Số bước đầu tiên tăng dần learning rate từ 0 lên $2 \times 10^{-4}$ để tránh "sốc" gradient ở giai đoạn đầu.
+    \item \texttt{optim} = "adamw\_8bit": Sử dụng bộ tối ưu hóa AdamW phiên bản 8-bit. Kỹ thuật này giảm đáng kể lượng bộ nhớ cần thiết cho trạng thái của optimizer mà hầu như không ảnh hưởng đến độ chính xác hội tụ.
+    \item \texttt{weight\_decay} = 0.001: Hệ số suy giảm trọng số (L2 regularization) giúp ngăn ngừa hiện tượng overfitting.
+    \item \texttt{lr\_scheduler\_type} = "linear": Learning rate giảm dần theo tuyến tính từ giá trị cực đại về 0 sau giai đoạn warmup.
+\end{itemize}
+
+\textbf{3. Cấu hình xử lý ảnh (Data Collator):}
+\begin{itemize}
+    \item \texttt{base\_size} = 1024: Kích thước cạnh dài nhất của ảnh nền (global view). Đảm bảo mô hình có cái nhìn tổng quan về toàn bộ văn bản.
+    \item \texttt{image\_size} = 640: Kích thước của các mảnh (patches) khi cắt ảnh.
+    \item \texttt{crop\_mode} = True: Kích hoạt chế độ cắt ảnh động. Ảnh đầu vào sẽ được chia thành các lưới (grid) dựa trên tỷ lệ khung hình thực tế, giúp bảo toàn độ chi tiết của các nét chữ nhỏ và dấu thanh tiếng Việt.
+\end{itemize}
