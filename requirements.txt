@@ -1,0 +1,15 @@
+unsloth
+transformers==4.56.2
+trl==0.22.2
+peft
+accelerate
+bitsandbytes
+datasets
+sentencepiece
+protobuf
+huggingface_hub>=0.34.0
+hf_transfer
+jiwer
+einops
+addict
+easydict
